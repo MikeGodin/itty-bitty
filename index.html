@@ -46,13 +46,19 @@ window.onhashchange = window.onload = function() {
     // location.href = hash // Redirect to data URI in supported browsers
     link.onclick = function() { location.href = "/edit" + location.hash }
 
-    var isIE11 = navigator.userAgent.match(/rv:11/);
+    var isIE = /Trident|MSIE/.test(navigator.userAgent);
     decompressDataURI(hash, preamble, function(hash) {
       if (!hash) return;
-      if (!isIE11) {     
+      if (!isIE) {     
        if (hash) iframe.src = hash;
       } else {
         dataToString(hash, function(content){
+          // enable access to iframe.contentWindow
+          iframe.src = 'javascript:void((function(){var script = document.createElement(\'script\');' +
+            'script.innerHTML = "(function() {' +
+            'document.open();document.domain=\'' + document.domain +
+            '\';document.close();})();";' +
+            'document.write("<head>" + script.outerHTML + "</head><body></body>");})())';
           var doc = iframe.contentWindow.document;
           doc.open();
           doc.write(content);
